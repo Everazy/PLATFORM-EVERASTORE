@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Link Hub — Komunitas & Kontak</title>
+<title>Evera Store — Link Komunitas & Kontak</title>
 <style>
 :root{--bg:#0d0f1a;--card:#171a2b;--text:#f2f3fa;--muted:#9aa0bd;--line:#262a42;--accent:#7c5cff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#f4f5fb;--card:#fff;--text:#161829;--muted:#666c8a;--line:#e2e4f0}}
@@ -58,13 +58,35 @@ input[type=checkbox]{width:auto}
 #toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:8px 16px;border-radius:99px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:30}
 #toast.on{opacity:1}
 .note{font-size:12px;color:var(--muted);text-align:center;margin:0 0 14px}
+
+@keyframes up{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes glow{0%,100%{box-shadow:0 10px 30px color-mix(in srgb,var(--accent) 35%,transparent)}50%{box-shadow:0 14px 46px color-mix(in srgb,var(--accent) 65%,transparent)}}
+@keyframes ping{0%{box-shadow:0 0 0 0 #2ecc7199}100%{box-shadow:0 0 0 9px #2ecc7100}}
+@keyframes drift{0%,100%{transform:translate(0,0)}50%{transform:translate(30px,40px)}}
+@keyframes shine{to{transform:translateX(220%) skewX(-20deg)}}
+body:before,body:after{content:"";position:fixed;z-index:-1;width:320px;height:320px;border-radius:50%;filter:blur(90px);opacity:.28;animation:drift 14s ease-in-out infinite;pointer-events:none}
+body:before{background:var(--accent);top:20%;left:-120px}
+body:after{background:#25a7e4;bottom:5%;right:-120px;animation-delay:-7s}
+#app>*{animation:up .6s cubic-bezier(.2,.7,.2,1) both;animation-delay:calc(var(--i,0)*55ms)}
+#app.edit>*{animation:none}
+.logo{animation:float 4s ease-in-out infinite,glow 3s ease-in-out infinite;font-weight:800;color:#fff}
+.pill:before{animation:ping 1.8s infinite}
+.card{position:relative;overflow:hidden}
+a.card:before{content:"";position:absolute;top:0;bottom:0;left:-60%;width:40%;background:linear-gradient(90deg,transparent,#ffffff22,transparent);transform:skewX(-20deg)}
+a.card:hover:before{animation:shine .9s}
+a.card:active{transform:scale(.98)}
+.ico{transition:transform .25s}.card:hover .ico{transform:scale(1.1) rotate(-4deg)}
+.arrow{transition:transform .2s}a.card:hover .arrow{transform:translateX(4px);color:var(--text)}
+footer b,footer{line-height:1.7}
+@media (prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
 <div id="app"></div>
 <div id="modal"></div>
 <div id="toast"></div>
-<script id="data" type="application/json">{"profile":{"name":"Nama Toko Anda","badge":"Toko Online & Aktif","desc":"Deskripsi singkat toko Anda. Semua akses resmi ada di bawah ini 👇","logo":"🛍️","logoImg":"","accent":"#7c5cff"},"sections":[{"id":"s1","title":"Kunjungi Toko","items":[{"id":"i1","icon":"🌐","title":"Website Toko","sub":"tokoanda.com","color":"#7c5cff","buttons":[{"label":"Buka","url":"https://example.com","copy":false}]}]},{"id":"s2","title":"Gabung Komunitas","items":[{"id":"i2","icon":"💬","title":"Grup WhatsApp","sub":"Info promo & update terbaru","color":"#25D366","buttons":[{"label":"Gabung","url":"https://chat.whatsapp.com/","copy":false}]},{"id":"i3","icon":"🎮","title":"Server Discord","sub":"Diskusi & support langsung","color":"#5865F2","buttons":[{"label":"Gabung","url":"https://discord.gg/","copy":false},{"label":"Salin username","url":"username#0000","copy":true}]},{"id":"i4","icon":"✈️","title":"Grup Telegram","sub":"Notifikasi cepat & stok","color":"#26A5E4","buttons":[{"label":"Gabung","url":"https://t.me/","copy":false}]},{"id":"i5","icon":"📸","title":"Instagram","sub":"@akunanda","color":"#E1306C","buttons":[{"label":"Follow","url":"https://instagram.com/","copy":false}]}]},{"id":"s3","title":"Hubungi Kami","items":[{"id":"i6","icon":"👤","title":"Admin 1","sub":"Founder","color":"#f59e0b","buttons":[{"label":"WhatsApp","url":"https://wa.me/628123456789","copy":false},{"label":"Telegram","url":"https://t.me/username","copy":false}]}]}],"footer":"© 2026 Nama Toko Anda.\nSemua link di atas resmi."}</script>
+<script id="data" type="application/json">{"profile":{"name":"Evera Store","badge":"Toko Online & Aktif","desc":"Top up games, apps premium, sosmed booster & staff digital. Semua akses resmi kami ada di bawah ini 👇","logo":"E","logoImg":"","accent":"#7c5cff"},"sections":[{"id":"s1","title":"Kunjungi Toko","items":[{"id":"i1","icon":"🌐","title":"Website Evera Store","sub":"everastore.biz.id","color":"#7c5cff","buttons":[{"label":"Buka","url":"https://everastore.biz.id","copy":false}]}]},{"id":"s2","title":"Gabung Komunitas","items":[{"id":"i2","icon":"💬","title":"Grup WhatsApp","sub":"Info promo & update terbaru","color":"#25D366","buttons":[{"label":"Gabung","url":"https://chat.whatsapp.com/HwPyeKhzD4tJWv7Dm9zQJe?mode=gi_t","copy":false}]},{"id":"i3","icon":"🎮","title":"Server Discord","sub":"Diskusi & support langsung","color":"#5865F2","buttons":[{"label":"Gabung","url":"https://discord.gg/VerDgCu2qJ","copy":false}]},{"id":"i4","icon":"✈️","title":"Grup Telegram","sub":"Notifikasi cepat & stok","color":"#26A5E4","buttons":[{"label":"Gabung","url":"https://t.me/+qBanw05yJig1ZjI9","copy":false}]},{"id":"i5","icon":"📸","title":"Instagram","sub":"@everastoree","color":"#E1306C","buttons":[{"label":"Follow","url":"https://www.instagram.com/everastoree","copy":false}]}]},{"id":"s3","title":"Hubungi Kami","items":[{"id":"i6","icon":"FE","title":"Everazy","sub":"Founder","color":"#f59e0b","buttons":[{"label":"WhatsApp","url":"https://wa.me/6285750173207","copy":false},{"label":"Telegram","url":"https://t.me/everazy","copy":false}]},{"id":"i7","icon":"RX","title":"riiexxxx","sub":"Admin 1","color":"#25D366","buttons":[{"label":"WhatsApp","url":"https://wa.me/6285753266574","copy":false}]},{"id":"i8","icon":"VL","title":"veltraaa","sub":"Admin 2","color":"#26A5E4","buttons":[{"label":"WhatsApp","url":"https://wa.me/6282254591721","copy":false},{"label":"Telegram","url":"https://t.me/veltraaa","copy":false}]}]}],"footer":"Evera Store\nTop Up Games · Apps Premium · Sosmed Booster · Staff Digital\n© 2026 Evera Store. Semua link di atas resmi."}</script>
 <script>
 const $=s=>document.querySelector(s), uid=()=>Math.random().toString(36).slice(2,8), clone=o=>JSON.parse(JSON.stringify(o));
 const h=(t,p={},...k)=>{const e=document.createElement(t);for(const[a,v]of Object.entries(p)){if(a==='class')e.className=v;else if(a.startsWith('on'))e.addEventListener(a.slice(2),v);else if(a==='style')e.style.cssText=v;else if(v!==false&&v!=null)e[a]=v}k.flat().forEach(c=>c!=null&&c!==false&&e.append(c.nodeType?c:document.createTextNode(c)));return e};
@@ -88,7 +110,7 @@ function card(sec,i){
   return h('div',{class:'card'},head,h('div',{class:'chips'},it.buttons.map(chip)));
 }
 function render(){
-  const s=editing?draft:state,p=s.profile,app=$('#app');app.replaceChildren();
+  const s=editing?draft:state,p=s.profile,app=$('#app');app.replaceChildren();app.className=editing?'edit':'';
   document.documentElement.style.setProperty('--accent',p.accent||'#7c5cff');
   document.title=p.name;
   app.append(h('header',{},h('div',{class:'logo'},p.logoImg?h('img',{src:p.logoImg,alt:''}):p.logo),p.badge&&h('span',{class:'pill'},p.badge),h('h1',{},p.name),h('p',{},p.desc)));
@@ -104,6 +126,7 @@ function render(){
   if(s.footer)app.append(h('footer',{},s.footer));
   app.append(editing?h('div',{class:'bar'},h('button',{class:'btn',onclick:profileForm},'👤 Profil'),h('button',{class:'btn',onclick:ioForm},'⇅ Ekspor/Impor'),h('button',{class:'btn',onclick:()=>pinForm(false)},'🔒 PIN'),h('button',{class:'btn',onclick:()=>{editing=false;draft=null;render()}},'Batal'),h('button',{class:'btn pri',onclick:save},'Simpan & Terbitkan'))
     :canEdit&&h('button',{class:'gear',title:'Edit halaman',onclick:gate},'⚙️'));
+  [...app.children].forEach((e,i)=>e.style.setProperty('--i',i));
 }
 function modal(title,body,acts){const close=()=>$('#modal').replaceChildren();$('#modal').replaceChildren(h('div',{class:'ov',onmousedown:e=>{if(e.target.classList.contains('ov'))close()}},h('div',{class:'md'},h('h3',{},title),body,h('div',{class:'acts'},acts(close)))));return close}
 const fld=(l,el)=>[h('label',{class:'f'},l),el];
