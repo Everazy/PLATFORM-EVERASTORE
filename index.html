@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Evera Store — Link Komunitas & Kontak</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%238b6cff'/%3E%3Cstop offset='1' stop-color='%235b3df5'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='url%28%23g%29'/%3E%3Ctext x='32' y='46' font-family='Arial,Helvetica,sans-serif' font-weight='800' font-size='38' text-anchor='middle' fill='%23fff'%3EE%3C/text%3E%3C/svg%3E">
 <style>
 :root{--bg:#0d0f1a;--card:#171a2b;--text:#f2f3fa;--muted:#9aa0bd;--line:#262a42;--accent:#7c5cff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#f4f5fb;--card:#fff;--text:#161829;--muted:#666c8a;--line:#e2e4f0}}
@@ -109,10 +110,15 @@ function card(sec,i){
   if(it.buttons.length===1&&!it.buttons[0].copy)return h('a',{class:'card',href:safeUrl(it.buttons[0].url),target:'_blank',rel:'noopener'},head,h('span',{class:'arrow'},'›'));
   return h('div',{class:'card'},head,h('div',{class:'chips'},it.buttons.map(chip)));
 }
+function setIcon(p){
+  let l=document.querySelector('link[rel=icon]');if(!l){l=document.createElement('link');l.rel='icon';document.head.append(l)}
+  const t=[...(p.logo||'E')].slice(0,2).join('').replace(/[&<>]/g,''),a=/^#[0-9a-f]{6}$/i.test(p.accent)?p.accent:'#7c5cff';
+  l.href=p.logoImg||('data:image/svg+xml,'+encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='"+a+"'/><stop offset='1' stop-color='#5b3df5'/></linearGradient></defs><rect width='64' height='64' rx='16' fill='url(#g)'/><text x='32' y='"+(t.length>1?42:46)+"' font-family='Arial,sans-serif' font-weight='800' font-size='"+(t.length>1?28:38)+"' text-anchor='middle' fill='#fff'>"+t+"</text></svg>"));
+}
 function render(){
   const s=editing?draft:state,p=s.profile,app=$('#app');app.replaceChildren();app.className=editing?'edit':'';
   document.documentElement.style.setProperty('--accent',p.accent||'#7c5cff');
-  document.title=p.name;
+  document.title=p.name+' — Link Komunitas & Kontak';setIcon(p);
   app.append(h('header',{},h('div',{class:'logo'},p.logoImg?h('img',{src:p.logoImg,alt:''}):p.logo),p.badge&&h('span',{class:'pill'},p.badge),h('h1',{},p.name),h('p',{},p.desc)));
   if(editing)app.append(h('p',{class:'note'},'Mode edit — atur bagian, tombol & platform di bawah, lalu tekan “Simpan & Terbitkan”.'));
   s.sections.forEach((sec,si)=>{
@@ -125,7 +131,7 @@ function render(){
   if(editing)app.append(h('button',{class:'add',onclick:()=>{s.sections.push({id:uid(),title:'Bagian Baru',items:[]});render()}},'＋ Tambah bagian baru'));
   if(s.footer)app.append(h('footer',{},s.footer));
   app.append(editing?h('div',{class:'bar'},h('button',{class:'btn',onclick:profileForm},'👤 Profil'),h('button',{class:'btn',onclick:ioForm},'⇅ Ekspor/Impor'),h('button',{class:'btn',onclick:()=>pinForm(false)},'🔒 PIN'),h('button',{class:'btn',onclick:()=>{editing=false;draft=null;render()}},'Batal'),h('button',{class:'btn pri',onclick:save},'Simpan & Terbitkan'))
-    :canEdit&&h('button',{class:'gear',title:'Edit halaman',onclick:gate},'⚙️'));
+    :canEdit?h('button',{class:'gear',title:'Edit halaman',onclick:gate},'⚙️'):'');
   [...app.children].forEach((e,i)=>e.style.setProperty('--i',i));
 }
 function modal(title,body,acts){const close=()=>$('#modal').replaceChildren();$('#modal').replaceChildren(h('div',{class:'ov',onmousedown:e=>{if(e.target.classList.contains('ov'))close()}},h('div',{class:'md'},h('h3',{},title),body,h('div',{class:'acts'},acts(close)))));return close}
@@ -198,15 +204,20 @@ async function save(){
   else toast('Tersimpan di browser ini');
   render();
 }
-render();
+const admin=()=>location.hash==='#admin';
+const loadLocal=()=>{try{const l=localStorage.getItem(KEY);if(l)state=JSON.parse(l)}catch{}};
+canEdit=admin();
+addEventListener('hashchange',()=>{canEdit=canEdit||admin();render()});
 (async()=>{
-  if(!window.claude||!claude.use)return;
-  art=await claude.use('artifact');
-  const u=await claude.use('user');
-  canEdit=location.hash==='#admin'||!!(art&&u&&u.canEdit());
-  if(!art){try{const l=localStorage.getItem(KEY);if(l){state=JSON.parse(l)}}catch{}}
+  if(window.claude&&claude.use){
+    art=await claude.use('artifact');
+    const u=await claude.use('user');
+    canEdit=admin()||!!(art&&u&&u.canEdit());
+  }
+  if(!art)loadLocal();
   render();
 })();
+loadLocal();render();
 </script>
 </body>
 </html>
