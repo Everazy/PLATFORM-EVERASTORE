@@ -93,8 +93,7 @@ const $=s=>document.querySelector(s), uid=()=>Math.random().toString(36).slice(2
 const h=(t,p={},...k)=>{const e=document.createElement(t);for(const[a,v]of Object.entries(p)){if(a==='class')e.className=v;else if(a.startsWith('on'))e.addEventListener(a.slice(2),v);else if(a==='style')e.style.cssText=v;else if(v!==false&&v!=null)e[a]=v}k.flat().forEach(c=>c!=null&&c!==false&&e.append(c.nodeType?c:document.createTextNode(c)));return e};
 const P={whatsapp:['💬','WhatsApp','#25D366'],discord:['🎮','Discord','#5865F2'],telegram:['✈️','Telegram','#26A5E4'],instagram:['📸','Instagram','#E1306C'],tiktok:['🎵','TikTok','#ff2d55'],youtube:['▶️','YouTube','#FF0000'],facebook:['👍','Facebook','#1877F2'],x:['✖️','X / Twitter','#8899a6'],website:['🌐','Website','#7c5cff'],email:['✉️','Email','#f59e0b'],custom:['⭐','Kustom (bebas)','#7c5cff']};
 const safeUrl=u=>{u=(u||'').trim();if(/^[a-z][a-z0-9+.-]*:/i.test(u))return /^(https?|mailto|tel):/i.test(u)?u:'#';return 'https://'+u};
-const KEY='linkhub:'+location.pathname;
-let state=JSON.parse($('#data').textContent),draft=null,editing=false,art=null,canEdit=false;
+let state=JSON.parse($('#data').textContent),draft=null,editing=false,canEdit=false;
 
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('on'),2200)}
 async function copy(t){try{await navigator.clipboard.writeText(t);toast('Disalin ✓')}catch{const a=h('textarea',{value:t});document.body.append(a);a.select();try{document.execCommand('copy');toast('Disalin ✓')}catch{toast('Gagal menyalin')}a.remove()}}
@@ -130,7 +129,7 @@ function render(){
   });
   if(editing)app.append(h('button',{class:'add',onclick:()=>{s.sections.push({id:uid(),title:'Bagian Baru',items:[]});render()}},'＋ Tambah bagian baru'));
   if(s.footer)app.append(h('footer',{},s.footer));
-  app.append(editing?h('div',{class:'bar'},h('button',{class:'btn',onclick:profileForm},'👤 Profil'),h('button',{class:'btn',onclick:ioForm},'⇅ Ekspor/Impor'),h('button',{class:'btn',onclick:()=>pinForm(false)},'🔒 PIN'),h('button',{class:'btn',onclick:()=>{editing=false;draft=null;render()}},'Batal'),h('button',{class:'btn pri',onclick:save},'Simpan & Terbitkan'))
+  app.append(editing?h('div',{class:'bar'},h('button',{class:'btn',onclick:profileForm},'👤 Profil'),h('button',{class:'btn',onclick:ioForm},'⇅ Ekspor/Impor'),h('button',{class:'btn',onclick:()=>{editing=false;draft=null;render()}},'Batal'),h('button',{class:'btn pri',onclick:save},'Simpan & Terbitkan'))
     :canEdit?h('button',{class:'gear',title:'Edit halaman',onclick:gate},'⚙️'):'');
   [...app.children].forEach((e,i)=>e.style.setProperty('--i',i));
 }
@@ -167,57 +166,48 @@ function profileForm(){
 }
 function ioForm(){
   const ta=h('textarea',{rows:10,value:JSON.stringify(draft,null,1),style:'font-family:monospace;font-size:12px'});
-  modal('Ekspor / Impor Data',h('div',{},h('p',{class:'note'},'Salin teks ini sebagai cadangan. Tempel data cadangan lalu tekan Terapkan untuk memulihkan.'),ta),close=>[h('button',{class:'btn',onclick:()=>copy(ta.value)},'Salin'),h('button',{class:'btn pri',onclick:()=>{try{const d=JSON.parse(ta.value);if(!d.profile||!Array.isArray(d.sections))throw 0;d.security=draft.security;draft=d;close();render()}catch{toast('Format data tidak valid')}}},'Terapkan')]);
+  modal('Ekspor / Impor Data',h('div',{},h('p',{class:'note'},'Salin teks ini sebagai cadangan. Tempel data cadangan lalu tekan Terapkan untuk memulihkan.'),ta),close=>[h('button',{class:'btn',onclick:()=>copy(ta.value)},'Salin'),h('button',{class:'btn pri',onclick:()=>{try{const d=JSON.parse(ta.value);if(!d.profile||!Array.isArray(d.sections))throw 0;draft=d;close();render()}catch{toast('Format data tidak valid')}}},'Terapkan')]);
 }
-const b64=b=>btoa(String.fromCharCode(...new Uint8Array(b))),ub64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
-async function hashPin(pin,salt){const k=await crypto.subtle.importKey('raw',new TextEncoder().encode(pin),'PBKDF2',false,['deriveBits']);return b64(await crypto.subtle.deriveBits({name:'PBKDF2',hash:'SHA-256',salt:ub64(salt),iterations:250000},k,256))}
 const enter=()=>{draft=clone(state);editing=true;render();scrollTo(0,0)};
-let fails=0,lockTo=0;
-function gate(){
-  if(!(window.crypto&&crypto.subtle))return toast('Browser tidak mendukung enkripsi PIN');
-  if(!state.security)return pinForm(true);
-  const pin=h('input',{type:'password',placeholder:'PIN',autocomplete:'current-password'}),msg=h('p',{class:'note'});
+let PW='';try{PW=sessionStorage.getItem('lh:pw')||''}catch{}
+const cacheSet=d=>{try{localStorage.setItem('lh:cache',JSON.stringify(d))}catch{}};
+const api=async body=>{const r=await fetch('/api/data',{method:'POST',headers:{'Content-Type':'application/json','x-admin-password':PW},body:JSON.stringify(body)});let j={};try{j=await r.json()}catch{}return{...j,status:r.status}};
+function ask(onOk){
+  const pin=h('input',{type:'password',placeholder:'Password admin',autocomplete:'current-password'}),msg=h('p',{class:'note'});
   const go=async close=>{
-    const w=lockTo-Date.now();if(w>0){msg.textContent='Terlalu banyak percobaan. Tunggu '+Math.ceil(w/1000)+' detik.';return}
-    if(await hashPin(pin.value,state.security.salt)===state.security.hash){fails=0;close();enter()}
-    else{fails++;if(fails>=3)lockTo=Date.now()+Math.min(300,15*2**(fails-3))*1000;msg.textContent='PIN salah.';pin.value=''}
+    PW=pin.value;msg.textContent='Memeriksa…';let r;
+    try{r=await api({action:'login'})}catch{msg.textContent='Tidak bisa terhubung ke server.';return}
+    if(r.status===200){try{sessionStorage.setItem('lh:pw',PW)}catch{}close();onOk()}
+    else{PW='';pin.value='';msg.textContent=r.status===429||r.status===503?(r.error||'Server belum siap.'):'Password salah.'}
   };
-  modal('Masuk Mode Edit',h('div',{},fld('Masukkan PIN admin',pin),msg),close=>{pin.onkeydown=e=>{if(e.key==='Enter')go(close)};return[h('button',{class:'btn',onclick:close},'Batal'),h('button',{class:'btn pri',onclick:()=>go(close)},'Masuk')]});
+  modal('Masuk Mode Edit',h('div',{},fld('Masukkan password admin',pin),msg),close=>{pin.onkeydown=e=>{if(e.key==='Enter')go(close)};return[h('button',{class:'btn',onclick:close},'Batal'),h('button',{class:'btn pri',onclick:()=>go(close)},'Masuk')]});
   setTimeout(()=>pin.focus(),50);
 }
-function pinForm(first){
-  const a=h('input',{type:'password',placeholder:'Minimal 6 karakter'}),b=h('input',{type:'password',placeholder:'Ulangi PIN'});
-  modal(first?'Buat PIN Admin':'Ganti PIN',h('div',{},h('p',{class:'note'},first?'Buat PIN agar mode edit terkunci. PIN disimpan dalam bentuk hash, bukan teks asli.':'PIN baru berlaku setelah Anda menekan “Simpan & Terbitkan”.'),fld('PIN baru',a),fld('Ulangi PIN',b)),close=>[h('button',{class:'btn',onclick:close},'Batal'),h('button',{class:'btn pri',onclick:async()=>{
-    if(a.value.length<6)return toast('PIN minimal 6 karakter');
-    if(a.value!==b.value)return toast('PIN tidak sama');
-    const salt=b64(crypto.getRandomValues(new Uint8Array(16))),sec={salt,hash:await hashPin(a.value,salt)};
-    close();
-    if(first){draft=clone(state);draft.security=sec;editing=true;render();scrollTo(0,0);toast('PIN dibuat — tekan Simpan agar berlaku')}
-    else{draft.security=sec;toast('PIN diganti — tekan Simpan agar berlaku')}
-  }},'Simpan PIN')]);
+async function gate(){
+  if(PW){try{if((await api({action:'login'})).status===200)return enter()}catch{}PW=''}
+  ask(enter);
 }
-function build(s){const c=document.documentElement.cloneNode(true);c.querySelector('#app').replaceChildren();c.querySelector('#modal').replaceChildren();const t=c.querySelector('#toast');t.textContent='';t.className='';c.querySelector('#data').textContent=JSON.stringify(s).replace(/</g,'\\u003c');return '<!doctype html>\n'+c.outerHTML}
 async function save(){
-  state=draft;draft=null;editing=false;
-  try{localStorage.setItem(KEY,JSON.stringify(state))}catch{}
-  if(art){try{toast('Menerbitkan…');await art.publish(build(state))}catch(e){if(e&&e.code==='conflict')return;toast('Gagal menerbitkan: '+((e&&(e.code||e.message))||'error'))}}
-  else toast('Tersimpan di browser ini');
-  render();
+  toast('Menyimpan…');let r;
+  try{r=await api({action:'save',data:draft})}catch{return toast('Gagal terhubung ke server')}
+  if(r.status===200){state=draft;draft=null;editing=false;cacheSet(state);toast('Tersimpan ✓ tampil untuk semua pengunjung');render()}
+  else if(r.status===401){PW='';try{sessionStorage.removeItem('lh:pw')}catch{}ask(save)}
+  else toast(r.error||'Gagal menyimpan')
 }
 const admin=()=>location.hash==='#admin';
-const loadLocal=()=>{try{const l=localStorage.getItem(KEY);if(l)state=JSON.parse(l)}catch{}};
 canEdit=admin();
-addEventListener('hashchange',()=>{canEdit=canEdit||admin();render()});
+addEventListener('hashchange',()=>{canEdit=canEdit||admin();if(!editing)render()});
 (async()=>{
-  if(window.claude&&claude.use){
-    art=await claude.use('artifact');
-    const u=await claude.use('user');
-    canEdit=admin()||!!(art&&u&&u.canEdit());
-  }
-  if(!art)loadLocal();
-  render();
+  let c=null,rendered=false;try{c=JSON.parse(localStorage.getItem('lh:cache'))}catch{}
+  if(c&&c.profile&&Array.isArray(c.sections)){state=c;render();rendered=true}else $('#app').style.visibility='hidden';
+  try{
+    const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),6000);
+    const r=await fetch('/api/data',{cache:'no-store',signal:ctl.signal});clearTimeout(to);
+    if(r.ok){const j=await r.json();if(j.data&&j.data.profile&&Array.isArray(j.data.sections)&&JSON.stringify(j.data)!==JSON.stringify(state)&&!editing){state=j.data;cacheSet(state);render();rendered=true}}
+  }catch{}
+  if(!rendered)render();
+  $('#app').style.visibility='';
 })();
-loadLocal();render();
 </script>
 </body>
 </html>
